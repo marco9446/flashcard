@@ -1,13 +1,22 @@
-export interface FlashcardItem {
-  textA: string;
-  textB: string;
-  correctCount: number;
-  wrongCount: number;
+export interface DirectionStats {
+  correct: number;
+  wrong: number;
+  lastSeen: number | null;
+  streak: number;
+}
+
+export interface CardItem {
+  id: string;
+  values: Record<string, string>;
+  totalViews: number;
+  stats: Record<string, DirectionStats>;
 }
 
 export interface Dataset {
   name: string;
-  items: FlashcardItem[];
+  columns: [string, string];
+  items: CardItem[];
+  createdAt: number;
 }
 
 const DB_NAME = "flashcard-db";
@@ -89,18 +98,38 @@ class StorageService {
     });
   }
 
-  async updateItemStats(
+  async updateDirectionalStats(
     datasetName: string,
-    itemIndex: number,
+    itemId: string,
+    promptColumn: string,
     isCorrect: boolean
   ): Promise<void> {
     const dataset = await this.getDataset(datasetName);
-    if (!dataset || !dataset.items[itemIndex]) return;
+    if (!dataset) return;
+
+    const item = dataset.items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    // Initialize stats for this direction if they don't exist
+    if (!item.stats[promptColumn]) {
+      item.stats[promptColumn] = {
+        correct: 0,
+        wrong: 0,
+        lastSeen: null,
+        streak: 0,
+      };
+    }
+
+    item.totalViews++;
+    const s = item.stats[promptColumn];
+    s.lastSeen = Date.now();
 
     if (isCorrect) {
-      dataset.items[itemIndex].correctCount++;
+      s.correct++;
+      s.streak++;
     } else {
-      dataset.items[itemIndex].wrongCount++;
+      s.wrong++;
+      s.streak = 0; // Reset streak on mistake
     }
 
     await this.saveDataset(dataset);

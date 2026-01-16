@@ -5,16 +5,45 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>flashcard</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+    <title>Flashcard Study App</title>
     <link href="/src/style.css" rel="stylesheet" />
-    <script type="module" src="/src/main.ts"></script>
 </head>
 
-<body>
-    ciao
-    <flash-card>
-        <p slot>This is the content of the flash card.</p>
-    </flash-card>
+<body x-data x-init="console.log('Alpine Initialized')" class="bg-slate-50 dark:bg-slate-900 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">Flashcard Study</h1>
+            <p class="text-slate-600 dark:text-slate-400">Offline-first learning with Alpine.js & IndexedDB</p>
+        </header>
+
+        <main x-cloak x-show="true">
+            <!-- Dashboard View -->
+            <div x-show="!$store.app.currentDataset" class="space-y-12">
+                <div class="flex justify-end mb-4">
+                    <button @click="$store.app.toggleImport()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center space-x-2">
+                        <span x-text="$store.app.showImport ? 'Close Importer' : 'Add New Dataset'"></span>
+                    </button>
+                </div>
+
+                <div x-show="$store.app.showImport" x-transition class="max-w-xl mx-auto mb-12">
+                    <dataset-import></dataset-import>
+                </div>
+
+                <div class="max-w-2xl mx-auto">
+                    <dataset-list></dataset-list>
+                </div>
+            </div>
+
+            <!-- Study View -->
+            <div x-show="$store.app.currentDataset" class="max-w-xl mx-auto">
+                <study-panel></study-panel>
+            </div>
+        </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

@@ -3,8 +3,8 @@
   "short_name": "Flashcards",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
   "description": "Learn words and sentences offline.",
   "icons": [
     {
