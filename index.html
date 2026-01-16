@@ -10,11 +10,20 @@
     <script type="module" src="/src/main.ts"></script>
 </head>
 
-<body>
-    <div x-data="app">
-        <upload-dataset></upload-dataset>
-        <dataset-list></dataset-list>
-        <flash-card></flash-card>
+<body class="bg-gray-50 min-h-screen">
+    <div x-data="app" class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-extrabold text-center mb-8 text-blue-900 tracking-tight">
+            Flashy <span class="text-blue-500">Cards</span>
+        </h1>
+
+        <div x-show="!$store.app.selectedDataset" class="space-y-8 animate-in fade-in duration-500">
+            <upload-dataset></upload-dataset>
+            <dataset-list></dataset-list>
+        </div>
+
+        <div x-show="$store.app.selectedDataset" class="animate-in slide-in-from-right duration-300">
+            <study-panel></study-panel>
+        </div>
     </div>
 </body>
 

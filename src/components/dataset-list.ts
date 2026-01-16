@@ -1,23 +1,24 @@
 class DatasetList extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
-    <section x-data="{ datasets: [{name: 'cap', size: 25},{name: 'cap', size: 25}] }">
+    <section class="mt-8">
+        <div x-show="$store.app.datasets.length > 0">
+          <h2 class="text-xl font-bold mb-4">Your Datasets</h2>
+          <ul class="space-y-3">
+            <template x-for="dataset in $store.app.datasets" :key="dataset.id">
+              <li class="border border-gray-200 rounded-lg p-4 flex items-center justify-between bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div>
+                  <h3 class="font-semibold text-lg" x-text="dataset.name"></h3>
+                  <p class="text-sm text-gray-500" x-text="dataset.items.length + ' cards • ' + dataset.columns.join(' → ')"></p>
+                </div>
 
-        <div x-show="datasets.length > 0">
-          <h2 class="text-lg font-semibold mb-2">Dataset List</h2>
-          <ul class="flex flex-col gap-1.5">
-            <template x-for="(dataset, index) in datasets" :key="index" >
-              <li class="border border-gray-300 rounded p-2 flex items-center gap-2">
-                <strong x-text="dataset.name"></strong> 
-                <span x-text="dataset.size"></span> 
-
-                <div class="ml-auto">
-                  <button @click="test()"
-                    class="cursor-pointer font-semibold py-1 px-3 rounded">
-                    Load
+                <div class="flex gap-2">
+                  <button @click="$store.app.selectDataset(dataset.id)"
+                    class="bg-blue-50 text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-100 transition-colors">
+                    Study
                   </button>
-                  <button
-                    class="cursor-pointer font-semibold py-1 px-3 rounded">
+                  <button @click="if(confirm('Delete this dataset?')) $store.app.deleteDataset(dataset.id)"
+                    class="bg-red-50 text-red-600 px-4 py-2 rounded-md font-medium hover:bg-red-100 transition-colors">
                     Delete
                   </button>
                 </div>  
@@ -26,9 +27,8 @@ class DatasetList extends HTMLElement {
           </ul>
         </div>
 
-
-        <div x-show="datasets.length === 0">
-          <p>No datasets available.</p>
+        <div x-show="$store.app.datasets.length === 0" class="text-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+          <p class="text-gray-500 italic">No datasets available. Upload one to get started!</p>
         </div>
       </section>
     `;

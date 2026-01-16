@@ -1,18 +1,21 @@
-export interface FlashcardItem {
-  textA: string;
-  textB: string;
+export interface CardItem {
+  id: string;
+  values: Record<string, string>;
   correctCount: number;
   wrongCount: number;
 }
 
 export interface Dataset {
+  id: string;
   name: string;
-  items: FlashcardItem[];
+  createdAt: number;
+  columns: string[];
+  items: CardItem[];
 }
 
 const DB_NAME = "flashcard-db";
 const STORE_NAME = "datasets";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 class StorageService {
   private db: IDBDatabase | null = null;
@@ -25,9 +28,10 @@ class StorageService {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: "name" });
+        if (db.objectStoreNames.contains(STORE_NAME)) {
+          db.deleteObjectStore(STORE_NAME);
         }
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
       };
 
       request.onsuccess = (event) => {
@@ -65,24 +69,24 @@ class StorageService {
     });
   }
 
-  async getDataset(name: string): Promise<Dataset | undefined> {
+  async getDataset(id: string): Promise<Dataset | undefined> {
     const db = await this.getDB();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, "readonly");
       const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(name);
+      const request = store.get(id);
 
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
   }
 
-  async deleteDataset(name: string): Promise<void> {
+  async deleteDataset(id: string): Promise<void> {
     const db = await this.getDB();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, "readwrite");
       const store = transaction.objectStore(STORE_NAME);
-      const request = store.delete(name);
+      const request = store.delete(id);
 
       request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
@@ -90,17 +94,20 @@ class StorageService {
   }
 
   async updateItemStats(
-    datasetName: string,
-    itemIndex: number,
+    datasetId: string,
+    itemId: string,
     isCorrect: boolean
   ): Promise<void> {
-    const dataset = await this.getDataset(datasetName);
-    if (!dataset || !dataset.items[itemIndex]) return;
+    const dataset = await this.getDataset(datasetId);
+    if (!dataset) return;
+
+    const item = dataset.items.find((i) => i.id === itemId);
+    if (!item) return;
 
     if (isCorrect) {
-      dataset.items[itemIndex].correctCount++;
+      item.correctCount++;
     } else {
-      dataset.items[itemIndex].wrongCount++;
+      item.wrongCount++;
     }
 
     await this.saveDataset(dataset);
